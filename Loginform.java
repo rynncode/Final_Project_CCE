@@ -9,9 +9,11 @@ public class Loginform extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
 
-    private static cce_final_proj.TransactionalVotingSystem votingSystem = new cce_final_proj.TransactionalVotingSystem();
+    private cce_final_proj.TransactionalVotingSystem votingSystem;
+
 // constructor for the login form
-    public Loginform() {
+    public Loginform(cce_final_proj.TransactionalVotingSystem votingSystem) {
+        this.votingSystem = votingSystem;
         setTitle("Sign In");
         setSize(400, 220);
         setLocationRelativeTo(null);
@@ -67,37 +69,104 @@ public class Loginform extends JFrame {
         }
 
         if (authenticate(username, password)) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
-            dispose();
-            new VotingForm(username, votingSystem).setVisible(true); 
-        } else {
+        // Ensure the voter exists in memory
+        votingSystem.registeredVoters.putIfAbsent(username, new cce_final_proj.Voter(username));
+        // Update hasVoted status from votes.csv
+        updateVoterStatusFromVotes();
+
+   JOptionPane.showMessageDialog(this, "Login successful!");
+        dispose();
+         new VotingForm(username, votingSystem).setVisible(true); 
+          } else {
             JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
         }
     }
-// authenticates the user by checking the users.csv file
     private boolean authenticate(String username, String password) {
-        File file = new File("users.csv");
-        if (!file.exists()) {
-            JOptionPane.showMessageDialog(this, "users.csv file not found!", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        try (Scanner sc = new Scanner(file)) {
-            while (sc.hasNextLine()) {
-                String[] data = sc.nextLine().split(",");
-                if (data.length >= 5 && data[0].trim().equals(username) && data[4].trim().equals(password)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error reading users.csv: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    File usersFile = new File("users.csv");
+    if (!usersFile.exists()) {
+        JOptionPane.showMessageDialog(this, "users.csv file not found!", "Error", JOptionPane.ERROR_MESSAGE);
         return false;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Loginform().setVisible(true));
+    boolean authenticated = false;
+
+    try (Scanner sc = new Scanner(usersFile)) {
+        while (sc.hasNextLine()) {
+            String[] data = sc.nextLine().split(",");
+            if (data.length >= 5 && data[0].trim().equals(username) && data[4].trim().equals(password)) {
+                authenticated = true;
+
+                // Populate registeredVoters map for all users
+                do {
+                    String userId = data[0].trim();
+                    if (!votingSystem.registeredVoters.containsKey(userId)) {
+                        votingSystem.registerVoter(userId);
+                    } else {
+                        votingSystem.registeredVoters.get(userId).hasVoted = false; // reset before reading votes
+                    }
+                } while (sc.hasNextLine() && (data = sc.nextLine().split(",")) != null);
+
+                break;
+            }
+        }
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Error reading users.csv: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        return false;
     }
+
+    if (!authenticated) return false;
+
+    // Update hasVoted based on votes.csv
+    File votesFile = new File("votes.csv");
+    if (votesFile.exists()) {
+        try (Scanner sc = new Scanner(votesFile)) {
+            while (sc.hasNextLine()) {
+                String[] voteData = sc.nextLine().split(",");
+                if (voteData.length >= 2) {
+                    String voterId = voteData[0].trim();
+                    if (votingSystem.registeredVoters.containsKey(voterId)) {
+                        votingSystem.registeredVoters.get(voterId).hasVoted = true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error reading votes.csv: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    return true;
+}
+    private void updateVoterStatusFromVotes() {
+    File file = new File("votes.csv");
+    if (!file.exists()) return;
+
+    try (Scanner sc = new Scanner(file)) {
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine().trim();
+            if (line.isEmpty()) continue; // skip empty lines
+            String[] data = line.split(",");
+            if (data.length >= 2) {
+                String voterId = data[0].trim();
+                cce_final_proj.Voter voter = votingSystem.registeredVoters.get(voterId);
+                if (voter != null) {
+                    voter.hasVoted = true;
+                } else {
+                    voter = new cce_final_proj.Voter(voterId);
+                    voter.hasVoted = true;
+                    votingSystem.registeredVoters.put(voterId, voter);
+                }   
+            }
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error reading votes.csv: " + e.getMessage());
+    }
+}
+
+   public static void main(String[] args) {
+    SwingUtilities.invokeLater(() -> {
+        cce_final_proj.TransactionalVotingSystem votingSystem = new cce_final_proj.TransactionalVotingSystem();
+        new Loginform(votingSystem).setVisible(true);
+    });
+}
 }
