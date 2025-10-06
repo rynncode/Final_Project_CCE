@@ -1,2 +1,2 @@
 # cce-final-proj
-Members: Martin
+Members: Aurelio, Baman, Caballero, Domingo, Martin 
