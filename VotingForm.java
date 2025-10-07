@@ -1,3 +1,5 @@
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -6,7 +8,8 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class VotingForm extends JFrame {
-
+    private TwoPhaseCommit tpc; // safe vote writing
+    private MixNet mixNet; 
     private JComboBox<String> candidateBox;
     private JButton castVoteButton, backButton, summaryButton;
     private JLabel welcomeLabel;
@@ -15,7 +18,13 @@ public class VotingForm extends JFrame {
     // constructor for the voting form
     private cce_final_proj.TransactionalVotingSystem votingSystem;
     public VotingForm(String username, cce_final_proj.TransactionalVotingSystem votingSystem) {
-        this.votingSystem = votingSystem;
+    this.votingSystem = votingSystem;
+    tpc = new TwoPhaseCommit(); // (2pc) reads existing votes
+    try {
+         mixNet = new MixNet();   // prepares anonymizer
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error initializing MixNet: " + ex.getMessage());
+    }
         votingSystem.mainFrame.setVisible(true);
         this.voterUsername = username;
 
@@ -88,12 +97,14 @@ public class VotingForm extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
 
         // ===== ACTIONS =====
-
+        
         castVoteButton.addActionListener(e -> {
             String selectedCandidate = (String) candidateBox.getSelectedItem();
-            boolean success = votingSystem.castVote(voterUsername, selectedCandidate);
+            // uses 2pc to safely write vote
+            boolean success = tpc.castVote(voterUsername, selectedCandidate);
 
             if (success) {
+            votingSystem.registeredVoters.get(voterUsername).hasVoted = true;
             castVoteButton.setEnabled(false);
             candidateBox.setEnabled(false);
             JOptionPane.showMessageDialog(null, "Vote successfully cast for " + selectedCandidate + "!");
