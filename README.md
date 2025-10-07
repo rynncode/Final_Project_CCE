@@ -1,9 +1,7 @@
 # Transactional Ballot Casting Voting System
 Members: Aurelio, Baman, Caballero, Domingo, Martin 
-
-
-
-Yet to be implemented: 
-Integration(partial) properly with TransactionalVotingSystem.
-Voting Interface - Currently no visible “Cast Vote” form or candidate display UI
-Visual Summary / Bar chart (simple) - Using JFreeChart(open source) for the summary page.
+Next to be implemented:
+votes.csv needs to have further privacy functions (make it unable to be read by the devs/admin)
+-> for now, due to testing it is visible
+Visual summary (bar graph)
+Candidate / image / votes / vote summary
