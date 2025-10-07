@@ -1,4 +1,4 @@
-# cce-final-proj
+# Transactional Ballot Casting Voting System
 Members: Aurelio, Baman, Caballero, Domingo, Martin 
 
 
