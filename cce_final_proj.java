@@ -18,7 +18,7 @@ public class cce_final_proj {
     
     public static class OnlineVotingSystem extends JFrame {
         private JPanel sidebarPanel, headerPanel, mainContentPanel;
-        private JButton homeButton, signInButton, registerButton, devButton, voteTallyButton;  
+        private JButton signInButton, registerButton, devButton, voteTallyButton;  
         private JLabel welcomeLabel, forgotPasswordLabel, profileLabel;
         // Create transactional voting object
         private TransactionalVotingSystem votingSystem;
@@ -27,7 +27,7 @@ public class cce_final_proj {
             this.votingSystem = votingSystem;
             votingSystem.mainFrame = this; // pass reference
             setTitle("Online Voting System");
-            setSize(1080, 600);
+            setSize(1200, 800);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
             initializeComponents();
@@ -40,7 +40,6 @@ public class cce_final_proj {
             headerPanel = new JPanel();
             mainContentPanel = new JPanel();
 
-            homeButton = new JButton("Home Page");
             signInButton = new JButton("Sign in");
             registerButton = new JButton("Register");
             devButton = new JButton("Admin Panel");
@@ -59,7 +58,6 @@ public class cce_final_proj {
             // Sidebar
             sidebarPanel.setLayout(new GridLayout(5, 1, 10, 10));
             sidebarPanel.setBackground(Color.WHITE);
-            sidebarPanel.add(homeButton);
             sidebarPanel.add(new JButton("Cast Vote"));
             sidebarPanel.add(voteTallyButton);
             sidebarPanel.add(new JButton("TBF"));
@@ -96,20 +94,20 @@ public class cce_final_proj {
 
             // Description text
             JLabel descriptionLabel = new JLabel("<html><div style='text-align: center; width:600px;'>"
-                    + "This site provides a secure and transparent way to cast votes. "
-                    + "Each vote is recorded as a transaction in a digital ledger."
+                    + "This site ensures a secure and transparent way to cast votes. "
+                    + "Each vote is recorded as a transaction in a digital ledger protected by using a Mix net based Algorithm."
                     + "</div></html>");
             descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 16));
             gbc.gridy = 1;
             homePanel.add(descriptionLabel, gbc);
 
             // Sign in button
-            signInButton.setPreferredSize(new Dimension(200, 40));
+            signInButton.setPreferredSize(new Dimension(400, 60));
             gbc.gridy = 2;
             homePanel.add(signInButton, gbc);
 
             // Register button
-            registerButton.setPreferredSize(new Dimension(200, 40));
+            registerButton.setPreferredSize(new Dimension(400, 60));
             gbc.gridy = 3;
             homePanel.add(registerButton, gbc);
 
@@ -146,18 +144,33 @@ voteTallyButton.addActionListener(e -> {
 
 // admin panel access (pass kay 123)
 devButton.addActionListener(e -> {
-    String pswd = JOptionPane.showInputDialog("Enter admin password:");
-    if ("123".equals(pswd)) { // simple password check
-    votingSystem.loadCandidatesFromFile();
-    votingSystem.loadRegisteredUsersFromFile();
-    votingSystem.loadVotesFromFile();
-    showAdminPanel(); // method to display panel
-    } else {
-        JOptionPane.showMessageDialog(null, "Incorrect password!");
+    JPasswordField passwordField = new JPasswordField();
+    Object[] message = {
+        "Enter admin password:", passwordField
+    };
+    
+    int option = JOptionPane.showConfirmDialog(
+        null,
+        message,
+        "Admin Login",
+        JOptionPane.OK_CANCEL_OPTION,
+        JOptionPane.PLAIN_MESSAGE
+    );
+
+    if (option == JOptionPane.OK_OPTION) {
+        // Get password from the field
+        String pswd = new String(passwordField.getPassword());
+
+        if ("123".equals(pswd)) { // simple password check
+            votingSystem.loadRegisteredUsersFromFile();
+            votingSystem.loadCandidatesFromFile();
+            votingSystem.loadVotesFromFile();
+            showAdminPanel(); // method to display panel
+        } else {
+            JOptionPane.showMessageDialog(null, "Incorrect password!");
+        }
     }
 });
-
-
 
         }
     
