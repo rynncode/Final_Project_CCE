@@ -7,12 +7,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Date;
+
 
 public class cce_final_proj {
 
@@ -21,15 +18,12 @@ public class cce_final_proj {
     
     public static class OnlineVotingSystem extends JFrame {
         private JPanel sidebarPanel, headerPanel, mainContentPanel;
-        private JButton homeButton, signInButton, registerButton, devButton;
+        private JButton homeButton, signInButton, registerButton, devButton, voteTallyButton;  
         private JLabel welcomeLabel, forgotPasswordLabel, profileLabel;
         // Create transactional voting object
-        private 
-TransactionalVotingSystem votingSystem = new 
-TransactionalVotingSystem();
+        private TransactionalVotingSystem votingSystem;
         // constructor
-        public OnlineVotingSystem(
-TransactionalVotingSystem votingSystem) {
+        public OnlineVotingSystem(TransactionalVotingSystem votingSystem) {
             this.votingSystem = votingSystem;
             votingSystem.mainFrame = this; // pass reference
             setTitle("Online Voting System");
@@ -50,6 +44,7 @@ TransactionalVotingSystem votingSystem) {
             signInButton = new JButton("Sign in");
             registerButton = new JButton("Register");
             devButton = new JButton("Admin Panel");
+            voteTallyButton = new JButton("Vote Tally");
 
             welcomeLabel = new JLabel("WELCOME!");
             forgotPasswordLabel = new JLabel("Forgot password?");
@@ -66,7 +61,7 @@ TransactionalVotingSystem votingSystem) {
             sidebarPanel.setBackground(Color.WHITE);
             sidebarPanel.add(homeButton);
             sidebarPanel.add(new JButton("Cast Vote"));
-            sidebarPanel.add(new JButton("TBF"));
+            sidebarPanel.add(voteTallyButton);
             sidebarPanel.add(new JButton("TBF"));
             sidebarPanel.add(devButton);
             add(sidebarPanel, BorderLayout.WEST);
@@ -143,6 +138,12 @@ TransactionalVotingSystem votingSystem) {
         loginForm.setVisible(true);
     }
 });
+
+voteTallyButton.addActionListener(e -> {
+    VoteTally tallyFrame = new VoteTally(votingSystem);
+    tallyFrame.setVisible(true);
+});
+
 // admin panel access (pass kay 123)
 devButton.addActionListener(e -> {
     String pswd = JOptionPane.showInputDialog("Enter admin password:");
@@ -155,6 +156,8 @@ devButton.addActionListener(e -> {
         JOptionPane.showMessageDialog(null, "Incorrect password!");
     }
 });
+
+
 
         }
     
@@ -189,8 +192,7 @@ devButton.addActionListener(e -> {
     String[] voterCols = {"Voter Username", "Has Voted"};
     Object[][] voterData = new Object[votingSystem.registeredVoters.size()][2];
     int i = 0;
-    for (Map.Entry<String, 
-Voter> entry : votingSystem.registeredVoters.entrySet()) {
+    for (Map.Entry<String, TransactionalVotingSystem.Voter> entry : votingSystem.registeredVoters.entrySet()) {
         voterData[i][0] = entry.getKey();           // actual username
         voterData[i][1] = entry.getValue().hasVoted; // true/false
         i++;
@@ -203,8 +205,7 @@ Voter> entry : votingSystem.registeredVoters.entrySet()) {
     String[] ballotCols = {"Voter ID (Hashed)", "Candidate", "Timestamp"};
     Object[][] ballotData = new Object[votingSystem.ballotLedger.size()][3];
     i = 0;
-    for (
-Ballot b : votingSystem.ballotLedger) {
+    for (TransactionalVotingSystem.Ballot b : votingSystem.ballotLedger) {
         ballotData[i][0] = hashVoterId.apply(b.voterId); // hashed ID
         ballotData[i][1] = b.candidate;
         ballotData[i][2] = b.timestamp.toString();
@@ -392,194 +393,4 @@ Ballot b : votingSystem.ballotLedger) {
         }
     }
     
-    // Transactional Voting Classes
-    
-    static class Voter {
-        String voterId;
-        boolean hasVoted;
-
-        public Voter(String voterId) {
-            this.voterId = voterId;
-            this.hasVoted = false;
-        }
-    }
-
-    static class Ballot {
-        String voterId;
-        String candidate;
-        Date timestamp;
-
-        public Ballot(String voterId, String candidate) {
-            this.voterId = voterId;
-            this.candidate = candidate;
-            this.timestamp = new Date();
-        }
-
-        @Override
-        public String toString() {
-            return "Ballot{" +
-                    "voterId='" + voterId + '\'' +
-                    ", candidate='" + candidate + '\'' +
-                    ", timestamp=" + timestamp +
-                    '}';
-        }
-    }
-    // Candidate class
-    static class Candidate {
-    String name;
-    String imagePath; // store path to image
-
-    public Candidate(String name, String imagePath) {
-        this.name = name;
-        this.imagePath = imagePath;
-    }
-
-    @Override
-    public String toString() {
-        return name; // Shows the name
-    }
-}
-    static class TransactionalVotingSystem {
-        public final Map<String, Voter> registeredVoters = new HashMap<>(); // Registered voters
-        public final List<Ballot> ballotLedger = new ArrayList<>(); // Ledger of all ballots
-        public final List<Candidate> candidates = new ArrayList<>(); // List of candidates
-        public JFrame mainFrame; // Main frame reference
-
-
-        public void loadRegisteredUsersFromFile() {
-    File usersFile = new File("users.csv");
-    if (!usersFile.exists()) return;
-
-    try (Scanner sc = new Scanner(usersFile)) {
-        while (sc.hasNextLine()) {
-            String[] data = sc.nextLine().split(",");
-            if (data.length >= 1) { 
-                String username = data[0].trim();
-                registeredVoters.putIfAbsent(username, new Voter(username));
-                
-            }
-        }
-    } catch (IOException e) {
-        JOptionPane.showMessageDialog(null, "Error loading users.csv: " + e.getMessage());
-    }
-}
-        public void loadCandidatesFromFile() {
-        File file = new File("candidates.csv");
-             if (!file.exists()) return;
-
-            candidates.clear();
-
-             try (Scanner sc = new Scanner(file)) {
-               while (sc.hasNextLine()) {
-            String line = sc.nextLine().trim();
-            if (line.isEmpty()) continue;
-
-            String[] parts = line.split(",", 2); // only 2 fields: name and imagePath
-            if (parts.length < 2) continue;
-
-            candidates.add(new Candidate(parts[0].trim(), parts[1].trim()));
-        }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error loading candidates: " + e.getMessage());
-    }
-}
-
-        // Load candidates from file
-        public void saveCandidatesToFile() {
-    try (FileWriter fw = new FileWriter("candidates.csv")) {
-        for (Candidate c : candidates) {
-            fw.write(c.name + "," + c.imagePath + "\n");
-     }
-     } catch (IOException e) {
-        JOptionPane.showMessageDialog(null, "Error saving candidates: " + e.getMessage());
-      }
-        }
-
-        
-        // register voter
-        public void registerVoter(String voterId) {
-            registeredVoters.put(voterId, new Voter(voterId));
-        }
-        
-        public boolean castVote(String voterId, String candidate) {
-            Voter voter = registeredVoters.get(voterId);
-            if (voter == null) {
-                JOptionPane.showMessageDialog(null, "Invalid voter ID!");
-                return false;
-            }
-            if (voter.hasVoted) {
-                JOptionPane.showMessageDialog(null, "This voter has already voted!");
-                return false;
-            }
-
-            Ballot ballot = new Ballot(voterId, candidate);
-            this.ballotLedger.add(ballot);
-            voter.hasVoted = true;
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-            try (FileWriter fw = new FileWriter("votes.csv", true)) {
-             fw.write(voterId + "," + candidate + "," + ballot.timestamp + "\n");
-             } catch (IOException e) {
-
-         JOptionPane.showMessageDialog(null, "Error saving vote: " + e.getMessage());
-         return false;
-     }
-            JOptionPane.showMessageDialog(null, "Vote successfully cast for " + candidate + "!");
-            return true;
-        }
-         // For Admin to add a candidate
-    public void addCandidate(String name, String imagePath) {
-        candidates.add(new Candidate(name, imagePath));
-    }
-        public void showLedger() {
-            System.out.println("\nTransaction Ledger:");
-            for (Ballot ballot : this.ballotLedger) {
-                System.out.println(ballot);
-            }
-        }
-        public void loadVotesFromFile() {
-    File file = new File("votes.csv");
-    if (!file.exists()) return;
-
-    ballotLedger.clear(); // avoids duplicates
-
-    try (Scanner sc = new Scanner(file)) {
-        while (sc.hasNextLine()) {
-            String line = sc.nextLine().trim();
-            if (line.isEmpty()) continue;
-
-            String[] data = line.split(",", 3);
-            if (data.length < 2) continue; // only require voterId and candidate
-
-            String voterId = data[0].trim();
-            String candidate = data[1].trim();
-            Date timestamp = null;
-
-            // Parse timestamp only if it exists
-            if (data.length == 3 && !data[2].trim().isEmpty()) {
-                try {
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-                    timestamp = sdf.parse(data[2].trim());
-                } catch (Exception e) {
-                    timestamp = null;
-                }
-            }
-
-            // Create and add ballot
-            Ballot ballot = new Ballot(voterId, candidate);
-            ballot.timestamp = (timestamp != null) ? timestamp : new Date(); // fallback to now
-            ballotLedger.add(ballot);
-
-            // Mark voter as voted
-            registeredVoters.putIfAbsent(voterId, new Voter(voterId));
-            registeredVoters.get(voterId).hasVoted = true;
-        }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error loading votes.csv: " + e.getMessage());
-    }
-}
-
-
-
-    }
-}
-   
+} 
