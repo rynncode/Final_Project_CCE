@@ -27,7 +27,7 @@ public class cce_final_proj {
             this.votingSystem = votingSystem;
             votingSystem.mainFrame = this; // pass reference
             setTitle("Online Voting System");
-            setSize(1200, 800);
+            setSize(1200, 700);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null);
             initializeComponents();
@@ -56,11 +56,9 @@ public class cce_final_proj {
             setLayout(new BorderLayout());
 
             // Sidebar
-            sidebarPanel.setLayout(new GridLayout(5, 1, 10, 10));
+            sidebarPanel.setLayout(new GridLayout(2, 1, 10, 0));
             sidebarPanel.setBackground(Color.WHITE);
-            sidebarPanel.add(new JButton("Cast Vote"));
             sidebarPanel.add(voteTallyButton);
-            sidebarPanel.add(new JButton("TBF"));
             sidebarPanel.add(devButton);
             add(sidebarPanel, BorderLayout.WEST);
 
@@ -181,6 +179,7 @@ devButton.addActionListener(e -> {
     dialog.setLocationRelativeTo(this);
     dialog.setLayout(new BorderLayout(10, 10));
 
+
   
     // Hash function for voter ID (used only in vote ledger)
     java.util.function.Function<String, String> hashVoterId = voterId -> {
@@ -251,7 +250,7 @@ devButton.addActionListener(e -> {
     addCandidatePanel.add(addCandidateButton);
 
     dialog.add(addCandidatePanel, BorderLayout.NORTH);
-
+    
     // Image selection
     final String[] imagePath = {null};
     selectImageButton.addActionListener(ev -> {
