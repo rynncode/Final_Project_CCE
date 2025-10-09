@@ -134,15 +134,15 @@ public class VotingForm extends JFrame {
         gbc.fill = GridBagConstraints.BOTH;
         JTextArea consoleArea = new JTextArea(5, 50);
         consoleArea.setEditable(false);
-        consoleArea.setFont(new Font("Monospaced", Font.PLAIN, 10));
+        consoleArea.setFont(new Font("Monospaced", Font.PLAIN, 25));
         JScrollPane consoleScroll = new JScrollPane(consoleArea);
-        consoleScroll.setPreferredSize(new Dimension(800, 150));
-        consoleScroll.setMinimumSize(new Dimension(400, 50));
+        consoleScroll.setPreferredSize(new Dimension(800, 200));
+        consoleScroll.setMinimumSize(new Dimension(400, 200));
         centerPanel.add(consoleScroll, gbc);
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // --- Initialize MixNet with console and labels ---
+        //  Initialize MixNet with console and labels
         try {
             mixNet = new MixNet(consoleArea, encryptTimeLabel, decryptTimeLabel);
         } catch (Exception ex) {

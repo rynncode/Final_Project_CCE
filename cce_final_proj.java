@@ -18,7 +18,7 @@ public class cce_final_proj {
     
     public static class OnlineVotingSystem extends JFrame {
         private JPanel sidebarPanel, headerPanel, mainContentPanel;
-        private JButton signInButton, registerButton, devButton, voteTallyButton;  
+        private JButton signInButton, registerButton, devButton, voteTallyButton, doweeButton;  
         private JLabel welcomeLabel, forgotPasswordLabel, profileLabel;
         // Create transactional voting object
         private TransactionalVotingSystem votingSystem;
@@ -43,6 +43,7 @@ public class cce_final_proj {
             signInButton = new JButton("Sign in");
             registerButton = new JButton("Register");
             devButton = new JButton("Admin Panel");
+            doweeButton = new JButton("Software Use");
             voteTallyButton = new JButton("Vote Tally");
 
             welcomeLabel = new JLabel("WELCOME!");
@@ -56,26 +57,32 @@ public class cce_final_proj {
             setLayout(new BorderLayout());
 
             // Sidebar
-            sidebarPanel.setLayout(new GridLayout(2, 1, 10, 0));
+            sidebarPanel.setLayout(new GridLayout(3, 1, 10, 10));
+            sidebarPanel.setBorder( BorderFactory.createEmptyBorder(20, 10, 20, 10));
             sidebarPanel.setBackground(Color.WHITE);
             sidebarPanel.add(voteTallyButton);
             sidebarPanel.add(devButton);
+            sidebarPanel.add(doweeButton);
             add(sidebarPanel, BorderLayout.WEST);
 
             // Header
-            headerPanel.setLayout(new BorderLayout());
-            headerPanel.setBackground(new Color(66, 133, 244));
-            JLabel titleLabel = new JLabel("Online Voting System");
-            titleLabel.setForeground(Color.WHITE);
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-            headerPanel.add(titleLabel, BorderLayout.WEST);
-
-            profileLabel.setForeground(Color.WHITE);
-            profileLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-            profileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-            headerPanel.add(profileLabel, BorderLayout.EAST);
-
-            add(headerPanel, BorderLayout.NORTH);
+                    headerPanel = new JPanel(new BorderLayout());
+	            headerPanel.setBackground(new Color(66, 133, 244));
+	            headerPanel.setPreferredSize(new Dimension(0, 45));
+	            headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
+	
+	            JLabel titleLabel = new JLabel("Online Voting System");
+	            titleLabel.setForeground(Color.WHITE);
+	            titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+	            titleLabel.setHorizontalAlignment(SwingConstants.LEFT);
+	            headerPanel.add(titleLabel, BorderLayout.WEST);
+	
+	            profileLabel.setForeground(Color.WHITE);
+	            profileLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+	            profileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+	            headerPanel.add(profileLabel, BorderLayout.EAST);
+	
+	            add(headerPanel, BorderLayout.NORTH);
 
             // Main content area
         homePanel = new JPanel(new GridBagLayout());
@@ -134,7 +141,14 @@ public class cce_final_proj {
         loginForm.setVisible(true);
     }
 });
-
+doweeButton.addActionListener(e -> {
+    JOptionPane.showMessageDialog(this,
+        "The Transactional Ballot Casting Voting System is a secure e-voting platform that ensures accuracy,\n"
+        + "transparency, and voter anonymity. It combines the Two-Phase Commit protocol for reliable transaction\n"
+        + "handling with a Mix-Net–Based Voting Algorithm to protect voter privacy. The system offers a user-friendly\n and efficient solution for conducting trustworthy digital elections." ,
+        "Software",
+        JOptionPane.INFORMATION_MESSAGE);
+});
 voteTallyButton.addActionListener(e -> {
     VoteTally tallyFrame = new VoteTally(votingSystem);
     tallyFrame.setVisible(true);

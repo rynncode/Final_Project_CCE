@@ -4,7 +4,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
-import java.util.Base64;
 
 public class MixNet {
     private SecretKey secretKey;
@@ -28,61 +27,87 @@ public class MixNet {
         byte[] keyBytes = "Secretivekeykeys".getBytes();
         secretKey = new SecretKeySpec(keyBytes, "AES");
     }
+    private void printStorage(String operation, long bytes, boolean isEncrypt) {
+    String output = operation + " Storage Complexity: " + bytes + " bytes\n";
+
+    if (consoleArea != null) {
+        consoleArea.append(output);
+        consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
+    } else {
+        System.out.print(output);
+    }
+}
 
     // --- Encrypt and shuffle votes ---
     public List<String> anonymizeVotes(List<String> votes) throws Exception {
-        long startTime = System.nanoTime();
+    long startTime = System.nanoTime();
 
-        Collections.shuffle(votes); // O(n)
+    Collections.shuffle(votes); // O(n)
 
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+    Cipher cipher = Cipher.getInstance("AES");
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-        List<String> encryptedVotes = new ArrayList<>();
-        for (String vote : votes) {
-            byte[] encrypted = cipher.doFinal(vote.getBytes());
-            encryptedVotes.add(Base64.getEncoder().encodeToString(encrypted));
-        }
-
-        long endTime = System.nanoTime();
-        printTime("Anonymize Votes", startTime, endTime, true);
-
-        return encryptedVotes;
+    List<String> encryptedVotes = new ArrayList<>();
+    for (String vote : votes) {
+        byte[] encrypted = cipher.doFinal(vote.getBytes());
+        encryptedVotes.add(Base64.getEncoder().encodeToString(encrypted));
     }
 
-    // --- Decrypt votes ---
-    public List<String> decryptVotes(List<String> encryptedVotes) throws Exception {
-        long startTime = System.nanoTime();
+    long endTime = System.nanoTime();
+    
+    // --- Print time as before ---
+    printTime("Anonymize Votes", startTime, endTime, true);
 
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+    // --- Calculate approximate storage ---
+    long storageBytes = 0;
+    for (String s : encryptedVotes) {
+        storageBytes += s.getBytes().length; // size in bytes
+    }
+    printStorage("Anonymize Votes", storageBytes, true);
 
-        List<String> decryptedVotes = new ArrayList<>();
-        for (String encrypted : encryptedVotes) {
-            byte[] decoded = Base64.getDecoder().decode(encrypted);
-            decryptedVotes.add(new String(cipher.doFinal(decoded)));
-        }
+    return encryptedVotes;
+}
 
-        long endTime = System.nanoTime();
-        printTime("Decrypt Votes", startTime, endTime, false);
+// --- Decrypt votes ---
+public List<String> decryptVotes(List<String> encryptedVotes) throws Exception {
+    long startTime = System.nanoTime();
 
-        return decryptedVotes;
+    Cipher cipher = Cipher.getInstance("AES");
+    cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+    List<String> decryptedVotes = new ArrayList<>();
+    for (String encrypted : encryptedVotes) {
+        byte[] decoded = Base64.getDecoder().decode(encrypted);
+        decryptedVotes.add(new String(cipher.doFinal(decoded)));
     }
 
-    // --- Print or display execution time ---
+    long endTime = System.nanoTime();
+    printTime("Decrypt Votes", startTime, endTime, false);
+
+    // --- Calculate approximate storage ---
+    long storageBytes = 0;
+    for (String s : decryptedVotes) {
+        storageBytes += s.getBytes().length;
+    }
+    printStorage("Decrypt Votes", storageBytes, false);
+
+    return decryptedVotes;
+}
+
+    // ---display execution time ---
     private void printTime(String operation, long start, long end, boolean isEncrypt) {
         long nano = end - start;
         double micro = nano / 1_000.0;
         double milli = nano / 1_000_000.0;
 
-        String output = operation + " Time: " + nano + " ns | " + micro + " µs | " + milli + " ms\n";
+        String output = operation + " Time: " + nano + " nano/s | " + micro + " micro/s | " + milli + " ms\n";
 
-        // If GUI provided, update console and labels
+        
         if (consoleArea != null) {
             consoleArea.append(output);
             consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
 
-            String summary = nano + " ns | " + micro + " µs | " + milli + " ms";
+            String summary = nano + " nano/s | " + micro + " micro/s | " + milli + " m/s";
             if (isEncrypt && encryptLabel != null) {
                 encryptLabel.setText("Last Encrypt Time: " + summary);
             } else if (!isEncrypt && decryptLabel != null) {
@@ -90,10 +115,9 @@ public class MixNet {
             }
         } else {
             // Fallback: print to console
-            System.out.print(output);
         }
     }
-
+    
     // --- Time Complexity Info ---
     // Both anonymizeVotes() and decryptVotes() are O(n) where n = number of votes.
     // Shuffle is O(n), iterating + encrypt/decrypt each vote is O(n).
