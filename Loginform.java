@@ -78,7 +78,7 @@ public class Loginform extends JFrame {
 
    JOptionPane.showMessageDialog(this, "Login successful!");
         dispose();
-         new VotingForm(username, votingSystem).setVisible(true); 
+         new Dashboard(username, votingSystem).setVisible(true); 
           } else {
             JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");

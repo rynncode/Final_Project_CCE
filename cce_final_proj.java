@@ -19,7 +19,29 @@ public class cce_final_proj {
     public static class OnlineVotingSystem extends JFrame {
         private JPanel sidebarPanel, headerPanel, mainContentPanel;
         private JButton signInButton, registerButton, devButton, voteTallyButton, doweeButton;  
-        private JLabel welcomeLabel, forgotPasswordLabel, profileLabel;
+        @SuppressWarnings("unused")
+        private JLabel welcomeLabel, profileLabel;
+        
+        class GradientPanel extends JPanel {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int width = getWidth();
+        int height = getHeight();
+
+        // Theme: Voting System - Secure and Progressive
+        Color color1 = new Color(56, 239, 125); // bright green (progress)
+        Color color2 = new Color(203, 195, 227); // light gold (stability)
+
+        GradientPaint gp = new GradientPaint(0, 0, color1, width, height, color2);
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, width, height);
+        g2d.setColor(new Color(255, 255, 255, 30)); // white transparent layer
+        g2d.fillOval(width / 3, height / 4, width / 2, height / 2);
+    }
+}
+
         // Create transactional voting object
         private TransactionalVotingSystem votingSystem;
         // constructor
@@ -47,7 +69,6 @@ public class cce_final_proj {
             voteTallyButton = new JButton("Vote Tally");
 
             welcomeLabel = new JLabel("WELCOME!");
-            forgotPasswordLabel = new JLabel("Forgot password?");
             profileLabel = new JLabel("PROFILE ▼");
         }
 
@@ -59,33 +80,20 @@ public class cce_final_proj {
             // Sidebar
             sidebarPanel.setLayout(new GridLayout(3, 1, 10, 10));
             sidebarPanel.setBorder( BorderFactory.createEmptyBorder(20, 10, 20, 10));
-            sidebarPanel.setBackground(Color.WHITE);
+            sidebarPanel.setBackground(new Color(65, 237, 131));
             sidebarPanel.add(voteTallyButton);
             sidebarPanel.add(devButton);
             sidebarPanel.add(doweeButton);
             add(sidebarPanel, BorderLayout.WEST);
 
             // Header
-                    headerPanel = new JPanel(new BorderLayout());
-	            headerPanel.setBackground(new Color(66, 133, 244));
-	            headerPanel.setPreferredSize(new Dimension(0, 45));
-	            headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
+                headerPanel = new GradientHeaderPanel("Online Voting System", new Font("Inter", Font.BOLD, 25));
+                add(headerPanel, BorderLayout.NORTH);
 	
-	            JLabel titleLabel = new JLabel("Online Voting System");
-	            titleLabel.setForeground(Color.WHITE);
-	            titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-	            titleLabel.setHorizontalAlignment(SwingConstants.LEFT);
-	            headerPanel.add(titleLabel, BorderLayout.WEST);
-	
-	            profileLabel.setForeground(Color.WHITE);
-	            profileLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-	            profileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-	            headerPanel.add(profileLabel, BorderLayout.EAST);
-	
-	            add(headerPanel, BorderLayout.NORTH);
 
             // Main content area
-        homePanel = new JPanel(new GridBagLayout());
+        homePanel = new GradientPanel();
+        homePanel.setLayout(new GridBagLayout());
         homePanel.setBackground(Color.LIGHT_GRAY);
         GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -93,7 +101,7 @@ public class cce_final_proj {
             gbc.insets = new Insets(15, 10, 15, 10);
 
             // Welcome label
-            welcomeLabel.setFont(new Font("Arial", Font.BOLD, 72));
+            welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 72));
             gbc.gridy = 0;
             homePanel.add(welcomeLabel, gbc);
 
@@ -115,12 +123,6 @@ public class cce_final_proj {
             registerButton.setPreferredSize(new Dimension(400, 60));
             gbc.gridy = 3;
             homePanel.add(registerButton, gbc);
-
-            // Forgot password link
-            forgotPasswordLabel.setForeground(Color.RED);
-            forgotPasswordLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-            gbc.gridy = 4;
-            homePanel.add(forgotPasswordLabel, gbc);
 
             // Wrap homePanel inside mainContentPanel
             mainContentPanel.setLayout(new BorderLayout());
@@ -312,8 +314,60 @@ devButton.addActionListener(e -> {
             });
         }
     }
+    
+    static class GradientHeaderPanel extends JPanel {
+    private String title;
+    private Font font;
 
-  
+    public GradientHeaderPanel(String title, Font font) {
+        this.title = title;
+        this.font = font;
+        setPreferredSize(new Dimension(0, 60));
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g.create();
+
+        int width = getWidth();
+        int height = getHeight();
+
+        // Gradient from #40ed82 to #a3cec7
+        Color color1 = new Color(0x40, 0xed, 0x82); // #40ed82
+        Color color2 = new Color(0xa3, 0xce, 0xc7); // #a3cec7
+        GradientPaint gp = new GradientPaint(0, 0, color1, width, height, color2);
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, width, height);
+
+        // Optional: subtle white overlay for smoothness
+        g2d.setColor(new Color(255, 255, 255, 30));
+        g2d.fillOval(width / 4, height / 4, width / 2, height / 2);
+
+        // Anti-alias text
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        // Draw title text
+        g2d.setFont(font);
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = 20;
+        int y = (height - fm.getHeight()) / 2 + fm.getAscent();
+
+        // subtle shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.drawString(title, x + 2, y + 2);
+
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(title, x, y);
+
+        g2d.dispose();
+    }
+}
+
+
+
+    
     // Register Form
     public static class RegisterForm extends JFrame {
         private JTextField usernameField, emailField, firstNameField, lastNameField;

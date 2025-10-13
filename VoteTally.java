@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
+import java.awt.image.BufferedImage;
+
 
 public class VoteTally extends JFrame {
 
@@ -61,26 +63,19 @@ for (TransactionalVotingSystem.Candidate c : candidates) {
 
     // Candidate photo
     ImageIcon icon;
-if (c.imagePath != null && !c.imagePath.isEmpty()) {
-    Image img = new ImageIcon(c.imagePath).getImage();
+    int photoWidth = 120;
+    int photoHeight = 120;
 
-    // scale image while keeping aspect ratio
-    int width = 100;
-    int height = (int) ((double) img.getHeight(null) / img.getWidth(null) * width);
-    Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-    icon = new ImageIcon(scaledImg);
+    if (c.imagePath != null && !c.imagePath.isEmpty()) {
+        icon = getScaledImage(c.imagePath, photoWidth, photoHeight);
+    } else {
+        icon = getScaledImage("default.png", photoWidth, photoHeight);
+    }
 
-} else {
-
-    Image img = new ImageIcon("default.png").getImage();
-    int width = 100;
-    int height = (int) ((double) img.getHeight(null) / img.getWidth(null) * width);
-    Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-    icon = new ImageIcon(scaledImg);
-}
     JLabel photoLabel = new JLabel(icon);
-    photoLabel.setVerticalAlignment(SwingConstants.CENTER); // center vertically
+    photoLabel.setPreferredSize(new Dimension(photoWidth, photoHeight));
     photoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    photoLabel.setVerticalAlignment(SwingConstants.CENTER);
     rowPanel.add(photoLabel, BorderLayout.WEST);
 
     // Candidate name
@@ -120,4 +115,47 @@ if (c.imagePath != null && !c.imagePath.isEmpty()) {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
+
+private ImageIcon getScaledImage(String path, int maxWidth, int maxHeight) {
+    try {
+        ImageIcon originalIcon = new ImageIcon(path);
+        Image originalImage = originalIcon.getImage();
+
+        int originalWidth = originalImage.getWidth(null);
+        int originalHeight = originalImage.getHeight(null);
+
+        if (originalWidth <= 0 || originalHeight <= 0) {
+            return new ImageIcon("default.png");
+        }
+
+        
+        double widthRatio = (double) maxWidth / originalWidth;
+        double heightRatio = (double) maxHeight / originalHeight;
+        double scale = Math.min(widthRatio, heightRatio);
+
+        int newWidth = (int) (originalWidth * scale);
+        int newHeight = (int) (originalHeight * scale);
+
+    
+        BufferedImage resizedImage = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        
+        int x = (maxWidth - newWidth) / 2;
+        int y = (maxHeight - newHeight) / 2;
+
+        g2d.drawImage(originalImage, x, y, newWidth, newHeight, null);
+        g2d.dispose();
+
+        return new ImageIcon(resizedImage);
+    } catch (Exception e) {
+        return new ImageIcon("default.png");
+    }
+}
+
 }

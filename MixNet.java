@@ -42,30 +42,42 @@ public class MixNet {
     public List<String> anonymizeVotes(List<String> votes) throws Exception {
     long startTime = System.nanoTime();
 
-    Collections.shuffle(votes); // O(n)
+    // Step counter
+    long steps = 0;
+
+    // Shuffle
+    Collections.shuffle(votes);
+    steps += votes.size(); // approximate O(n) for shuffle
 
     Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+    steps++; // cipher init counted as one step
 
     List<String> encryptedVotes = new ArrayList<>();
     for (String vote : votes) {
+        steps++; // loop iteration
         byte[] encrypted = cipher.doFinal(vote.getBytes());
         encryptedVotes.add(Base64.getEncoder().encodeToString(encrypted));
+        steps++; // encryption + encoding counted as one step
     }
 
     long endTime = System.nanoTime();
-    
-    // --- Print time as before ---
     printTime("Anonymize Votes", startTime, endTime, true);
 
-    // --- Calculate approximate storage ---
-    long storageBytes = 0;
-    for (String s : encryptedVotes) {
-        storageBytes += s.getBytes().length; // size in bytes
-    }
-    printStorage("Anonymize Votes", storageBytes, true);
+    // Print estimated steps as "algorithmic complexity"
+    printSteps("Anonymize Votes", steps);
 
     return encryptedVotes;
+}
+
+private void printSteps(String operation, long steps) {
+    String output = operation + " Approx. Steps (for complexity estimate): " + steps + "\n";
+    if (consoleArea != null) {
+        consoleArea.append(output);
+        consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
+    } else {
+        System.out.print(output);
+    }
 }
 
 // --- Decrypt votes ---
