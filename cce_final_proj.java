@@ -333,22 +333,21 @@ devButton.addActionListener(e -> {
         int width = getWidth();
         int height = getHeight();
 
-        // Gradient from #40ed82 to #a3cec7
+       
         Color color1 = new Color(0x40, 0xed, 0x82); // #40ed82
         Color color2 = new Color(0xa3, 0xce, 0xc7); // #a3cec7
         GradientPaint gp = new GradientPaint(0, 0, color1, width, height, color2);
         g2d.setPaint(gp);
         g2d.fillRect(0, 0, width, height);
 
-        // Optional: subtle white overlay for smoothness
         g2d.setColor(new Color(255, 255, 255, 30));
         g2d.fillOval(width / 4, height / 4, width / 2, height / 2);
 
-        // Anti-alias text
+       
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                              RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Draw title text
+        // title text
         g2d.setFont(font);
         FontMetrics fm = g2d.getFontMetrics();
         int x = 20;
